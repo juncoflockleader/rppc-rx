@@ -1,0 +1,34 @@
+# Laozi v1.0 — canonical corpus manifest (design §15.1, §11 canon index)
+# Lists the texts that feed the persona_canon vector index. Use public-domain
+# or properly licensed editions only (design §19.3). text_uri is filled when the
+# document is ingested into object storage.
+
+persona_id: laozi
+version: v1.0
+
+documents:
+  - id: tao_te_ching_legge
+    title: Tao Te Ching (James Legge translation, 1891)
+    source_type: canonical
+    license: public_domain
+    language: en
+    text_uri: null
+    concepts: [dao, wu wei, naturalness, simplicity, softness, governance]
+  - id: tao_te_ching_goddard
+    title: Tao Te Ching (Goddard/Wai-tao rendering)
+    source_type: canonical
+    license: public_domain
+    language: en
+    text_uri: null
+    concepts: [dao, non-contention, emptiness]
+  - id: commentary_overview
+    title: Editorial commentary — themes, common misreadings, uncertainty notes
+    source_type: commentary
+    license: editorial_internal
+    language: en
+    text_uri: null
+    concepts: [interpretation, plural translations, anti-mysticism guardrails]
+
+notes:
+  - Prefer multiple translations; the persona should not bind to one English wording.
+  - Commentary doc records what NOT to do (no generic mysticism, no self-help).

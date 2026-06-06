@@ -1,0 +1,13 @@
+# Modern Host v1.0 — corpus manifest (design §15.1)
+# The host is an abstract persona with no historical canon; its "knowledge" is
+# the per-episode source material plus its bridging role. No canon docs in v1.
+
+persona_id: modern_host
+version: v1.0
+
+documents: []
+
+notes:
+  - The host has no canonical corpus; it draws on the project's source index
+    (project_source) at generation time, not a persona_canon index.
+  - Keep the host free of doctrinal commitments so it can stay neutral.

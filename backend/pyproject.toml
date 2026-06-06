@@ -1,0 +1,30 @@
+[project]
+name = "podcast-synthesis-backend"
+version = "0.1.0"
+description = "Podcast Synthesis MVP backend (FastAPI)"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "psycopg[binary,pool]>=3.1",
+    "python-multipart>=0.0.9",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# Production job queue + redis-backed progress. The skeleton runs without these.
+queue = ["redis>=5.0", "rq>=1.16"]
+dev = ["pytest>=8.0", "httpx>=0.27", "ruff>=0.4"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"

@@ -1,0 +1,32 @@
+# Buddha v1.0 — canonical corpus manifest (design §15.1)
+# Public-domain early-Buddhist sources in translation. text_uri filled on ingest.
+
+persona_id: buddha
+version: v1.0
+
+documents:
+  - id: dhammapada_muller
+    title: The Dhammapada (Max Müller translation, 1881)
+    source_type: canonical
+    license: public_domain
+    language: en
+    text_uri: null
+    concepts: [craving, mind, impermanence, ethical conduct]
+  - id: sbe_suttas
+    title: Selected early suttas (Sacred Books of the East, public-domain renderings)
+    source_type: canonical
+    license: public_domain
+    language: en
+    text_uri: null
+    concepts: [four noble truths, dependent arising, non-self, middle way]
+  - id: commentary_overview
+    title: Editorial commentary — scope limits, anti-conflation and safety notes
+    source_type: commentary
+    license: editorial_internal
+    language: en
+    text_uri: null
+    concepts: [early-framing guardrails, no clinical advice, no school authority]
+
+notes:
+  - Use early-Buddhist sources; exclude later Mahayana/Zen/Vajrayana texts in v1.
+  - Commentary records hard limits: no diagnosis, no sect authority, no wellness equation.

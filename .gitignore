@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Env / secrets
+.env
+.env.local
+*.local
+
+# Local object storage (MVP filesystem backend)
+backend/.storage/
+storage/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Node (future frontend)
+node_modules/
+.next/
+dist/
