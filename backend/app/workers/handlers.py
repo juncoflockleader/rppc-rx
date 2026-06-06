@@ -62,6 +62,23 @@ def source_ingestion(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
+@register("episode_planning")
+def episode_planning(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Role context cards + discussion plan (design §11.3-11.4)."""
+    from ..planning.pipeline import plan_episode
+    from ..repositories import episodes as ep_repo
+
+    episode_id = payload["episode_id"]
+    try:
+        result = plan_episode(episode_id, progress=lambda p: jobs_repo.set_progress(job_id, p))
+    except Exception:
+        ep_repo.set_episode_status(episode_id, "failed")
+        raise
+    emit("discussion_plan_generated", episode_id=episode_id,
+         beats=result["beats"], cards=result["cards"])
+    return result
+
+
 # --- Later-milestone placeholders (registered so the queue accepts them) -----
 
 def _todo(milestone: str) -> Handler:
@@ -73,7 +90,6 @@ def _todo(milestone: str) -> Handler:
 for _jt, _ms in {
     "claim_extraction": "M2",
     "embedding": "M2",
-    "episode_planning": "M4",
     "script_generation": "M5",
     "script_qa": "M6",
     "voice_direction": "M7",

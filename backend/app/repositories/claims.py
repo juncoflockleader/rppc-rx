@@ -38,3 +38,11 @@ def list_claims(source_id: str) -> List[dict]:
             "SELECT * FROM source_claims WHERE source_id = %s ORDER BY created_at",
             (source_id,),
         ).fetchall()
+
+
+def list_claims_for_project(project_id: str) -> List[dict]:
+    with get_conn() as conn:
+        return conn.execute(
+            "SELECT * FROM source_claims WHERE project_id = %s ORDER BY created_at",
+            (project_id,),
+        ).fetchall()

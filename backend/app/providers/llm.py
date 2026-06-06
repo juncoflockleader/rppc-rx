@@ -136,6 +136,50 @@ class FakeLLMProvider(LLMProvider):
                 ],
                 "themes": ["desire", "comparison"],
             }
+        if req.task_name.startswith("role_context"):
+            return {
+                "persona_id": req.metadata.get("persona_id", "persona"),
+                "episode_position": "A grounded position drawn from this persona's stance.",
+                "relevant_source_claim_ids": req.metadata.get("claim_ids", []),
+                "relevant_persona_concepts": req.metadata.get("concepts", []),
+                "likely_agreements": ["Shares the framing that the topic matters."],
+                "likely_tensions": ["Would resist over-analysis and modern jargon."],
+                "style_reminders": ["Keep responses in character.",
+                                    "Let the host introduce modern terms."],
+                "forbidden_moves": ["Do not claim to be the real historical figure."],
+            }
+        if req.task_name.startswith("discussion_plan"):
+            speakers = req.metadata.get("speaker_labels", ["HOST"])
+            host = speakers[0]
+            guests = speakers[1:] or [host]
+            target = req.metadata.get("target_seconds", 600)
+            beats = [
+                {"beat_id": "opening", "title": "Framing the question",
+                 "goal": "Introduce the material and frame the question.",
+                 "primary_speaker": host, "target_seconds": int(target * 0.15),
+                 "source_claim_ids": req.metadata.get("claim_ids", [])[:1],
+                 "persona_concepts": []},
+            ]
+            for i, g in enumerate(guests, start=1):
+                beats.append({
+                    "beat_id": f"beat_{i}",
+                    "title": f"{g} responds",
+                    "goal": f"Let {g} bring their distinct perspective.",
+                    "primary_speaker": g,
+                    "target_seconds": int(target * (0.7 / max(1, len(guests)))),
+                    "source_claim_ids": req.metadata.get("claim_ids", []),
+                    "persona_concepts": req.metadata.get("concepts", []),
+                })
+            beats.append({
+                "beat_id": "closing", "title": "Modern application",
+                "goal": "Host ties it to a concrete modern example.",
+                "primary_speaker": host, "target_seconds": int(target * 0.15),
+                "source_claim_ids": [], "persona_concepts": []})
+            return {
+                "title": req.metadata.get("title", "Generated discussion plan"),
+                "beats": beats,
+                "ending": {"takeaway": "Less forcing, clearer seeing."},
+            }
         return {}
 
 

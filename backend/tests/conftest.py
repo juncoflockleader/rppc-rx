@@ -35,7 +35,8 @@ MIGRATIONS_DIR = Path(__file__).resolve().parent.parent / "migrations"
 DATA_TABLES = [
     "feedback_events", "audio_mixes", "audio_segments", "qa_reports",
     "segment_evidence_links", "script_segments", "script_versions",
-    "discussion_plans", "episode_personas", "episodes", "source_claims",
+    "role_context_cards", "discussion_plans", "episode_personas", "episodes",
+    "source_claims",
     "source_chunks", "sources", "projects", "users",
     "persona_canon_chunks", "persona_corpus_docs", "persona_versions",
     "persona_assets",

@@ -76,7 +76,19 @@ Seed the library after migrating:
 make seed-personas        # python -m app.personas_import
 ```
 
-Episode planning, script/QA/audio pipelines are later milestones — their job
+## Milestone 4 status (Episode Planning) — complete
+
+Per design §25 M4 / §11.2–11.4 — the first stage that uses M2 claims *and* M3 canon:
+
+- [x] Episode create with participants + persona safety check (`POST /api/projects/{id}/episodes`)
+- [x] Role context cards (§11.3) — per speaker, grounded in project claims + persona canon
+- [x] Discussion plan (§11.4, §14.1) — beats, speakers, target seconds, claim/concept links
+- [x] Background `episode_planning` job (role context → plan) with progress
+- [x] Get plan / get role context / regenerate (new plan version) (`/api/episodes/...`)
+- [x] `role_context_cards` table (migration 013), versioned for regeneration
+- [x] Unit + integration tests (generators, full create→plan flow, regenerate, validation)
+
+Script generation, QA, and audio pipelines are later milestones — their job
 types are registered as stubs so the queue path is exercisable.
 
 ## Quick start
