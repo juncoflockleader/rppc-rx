@@ -38,6 +38,23 @@ def list_sources(project_id: str) -> list[dict]:
         ).fetchall()
 
 
+def set_summary(source_id: str, summary: str, themes: list) -> None:
+    """Store the source-level summary + themes in metadata (design §11.1)."""
+    import json
+
+    with get_conn() as conn:
+        conn.execute(
+            """
+            UPDATE sources
+               SET metadata = COALESCE(metadata, '{}'::jsonb)
+                   || %s::jsonb,
+                   updated_at = now()
+             WHERE id = %s
+            """,
+            (json.dumps({"summary": summary, "themes": themes}), source_id),
+        )
+
+
 def set_object_storage_uri(source_id: str, uri: str) -> None:
     with get_conn() as conn:
         conn.execute(

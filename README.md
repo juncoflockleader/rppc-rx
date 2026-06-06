@@ -16,6 +16,8 @@ See the specs:
 backend/            FastAPI service (Python — preferred per design §7)
   app/
     api/            HTTP routers (projects, sources, personas, jobs)
+    providers/      LLM + embedding provider adapters (fake / anthropic / openai)
+    ingestion/      parse → chunk → analyze (summary/claims) → embed pipeline
     repositories/   raw-SQL data access (migrations are the schema source of truth)
     services/       storage + job-queue abstractions
     workers/        background worker entrypoint + job handlers
@@ -41,7 +43,21 @@ Per design §25 Milestone 1, runnable and tested:
 - [x] Business-event logging (§20.1), source size limit (§22.3), human-readable errors (§18)
 - [x] Unit + integration tests, GitHub Actions CI
 
-Source *processing*, persona generation, script/QA/audio pipelines are later
+## Milestone 2 status (Source Processing) — complete
+
+Per design §25 M2, a source now becomes structured, retrievable data:
+
+- [x] Document parser — text/md passthrough, PDF via `pypdf` with page tracking (§11.1)
+- [x] Chunker — ~600–1000 tokens, 100–150 overlap, char/page offsets (§27)
+- [x] LLM provider adapter (§13) — `fake` (deterministic, default) + `anthropic` + `openai`,
+      with schema-validated structured output and repair/retry (§13.4)
+- [x] Embedding provider adapter — `fake` (deterministic) + `openai`
+- [x] Source summary + theme extraction; claim extraction with chunk/page links (§11.1)
+- [x] `project_source` vector index in pgvector + cosine retrieval (§10)
+- [x] `GET /api/sources/{id}/summary` (§12.2)
+- [x] Unit + integration tests on fake providers (no network)
+
+Persona DB import, episode planning, script/QA/audio pipelines are later
 milestones — their job types are registered as stubs so the queue path is exercisable.
 
 ## Quick start

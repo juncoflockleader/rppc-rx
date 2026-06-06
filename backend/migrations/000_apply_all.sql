@@ -19,5 +19,6 @@ BEGIN;
 \ir 008_audio.sql
 \ir 009_jobs.sql
 \ir 010_feedback.sql
+\ir 011_chunk_embeddings.sql
 
 COMMIT;

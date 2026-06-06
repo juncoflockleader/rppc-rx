@@ -7,7 +7,6 @@ parsing / LLM / TTS work — the queue and progress plumbing stay the same.
 """
 from __future__ import annotations
 
-import time
 from typing import Any, Callable, Dict
 
 from ..observability import emit
@@ -40,19 +39,27 @@ def registered_job_types() -> list[str]:
 
 @register("source_ingestion")
 def source_ingestion(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-    """Minimal ingestion: mark the source processed.
+    """Full ingestion (design §11.1): parse -> chunk -> summary -> claims -> embed.
 
-    Real implementation (M2): parse -> clean -> chunk -> summarize -> extract
-    claims -> embed. Here we just walk the progress bar so the SSE/progress UI
-    is demoable.
+    Implemented in app/ingestion/pipeline; this handler just wires progress and
+    failure handling. On failure the source is marked failed so the UI can show
+    a human-readable error (§18).
     """
+    from ..ingestion.parser import ParseError
+    from ..ingestion.pipeline import ingest_source
+
     source_id = payload["source_id"]
-    for step, pct in [("parsing", 0.25), ("chunking", 0.5), ("summarizing", 0.75)]:
-        jobs_repo.set_progress(job_id, pct)
-        time.sleep(0.2)  # simulate work
-    sources_repo.set_source_status(source_id, "processed")
-    emit("source_processed", source_id=source_id)
-    return {"source_id": source_id, "note": "M1 stub — real ingestion lands in M2"}
+    try:
+        result = ingest_source(source_id, progress=lambda p: jobs_repo.set_progress(job_id, p))
+    except ParseError as exc:
+        sources_repo.set_source_status(source_id, "failed")
+        raise  # message is already user-facing
+    except Exception:
+        sources_repo.set_source_status(source_id, "failed")
+        raise
+    emit("source_processed", source_id=source_id, chunks=result["chunks"],
+         claims=result["claims"])
+    return result
 
 
 # --- Later-milestone placeholders (registered so the queue accepts them) -----

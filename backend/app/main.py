@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import __version__
-from .api import jobs, personas, projects, sources
+from .api import jobs, personas, projects, source_summary, sources
 from .db import close_pool
 
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +28,7 @@ app.add_middleware(
 
 app.include_router(projects.router)
 app.include_router(sources.router)
+app.include_router(source_summary.router)
 app.include_router(personas.router)
 app.include_router(jobs.router)
 

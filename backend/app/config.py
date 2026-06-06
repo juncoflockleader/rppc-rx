@@ -29,12 +29,29 @@ class Settings(BaseSettings):
     # Limits (design §22.3). 10 MB default per source for the MVP.
     max_source_bytes: int = 10 * 1024 * 1024
 
-    # Provider adapters (later milestones)
+    # LLM provider adapter (design §13). fake | anthropic | openai
     llm_provider: str = "fake"
     llm_api_key: str = ""
+    anthropic_api_key: str = ""
+    openai_api_key: str = ""
+    llm_model: str = "claude-opus-4-8"          # used when llm_provider=anthropic
+    openai_llm_model: str = "gpt-4o"            # used when llm_provider=openai
+
+    # Embedding provider adapter. fake | openai (Anthropic has no first-party
+    # embeddings API; Voyage is the recommended pairing and is out of MVP scope).
+    embedding_provider: str = "fake"
+    embedding_model: str = "text-embedding-3-small"
+    fake_embedding_dim: int = 64
+
+    # TTS provider adapter (M7)
     tts_provider: str = "fake"
     tts_api_key: str = ""
+
     vector_db_url: str = ""
+
+    # Chunking (design §11.1, §27). Token counts are heuristic in the MVP.
+    chunk_target_tokens: int = 800
+    chunk_overlap_tokens: int = 120
 
     # Auth (dev stub)
     jwt_secret: str = "dev-insecure-change-me"

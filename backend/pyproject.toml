@@ -11,11 +11,15 @@ dependencies = [
     "psycopg[binary,pool]>=3.1",
     "python-multipart>=0.0.9",
     "pyyaml>=6.0",
+    "pypdf>=4.0",
+    "jsonschema>=4.20",
 ]
 
 [project.optional-dependencies]
 # Production job queue + redis-backed progress. The skeleton runs without these.
 queue = ["redis>=5.0", "rq>=1.16"]
+# Real LLM/embedding providers. Tests run on the deterministic fakes without these.
+providers = ["anthropic>=0.40", "openai>=1.40"]
 dev = ["pytest>=8.0", "httpx>=0.27", "ruff>=0.4"]
 
 [build-system]
