@@ -4,6 +4,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from ..auth import require_project_owner
+from ..config import get_settings
+from ..observability import emit
 from ..repositories import sources as sources_repo
 from ..schemas import CreateTextSourceRequest, SourceOut
 from ..services.queue import get_queue
@@ -19,9 +21,22 @@ _ALLOWED_UPLOAD = {
 }
 
 
+def _check_size(n_bytes: int) -> None:
+    limit = get_settings().max_source_bytes
+    if n_bytes > limit:
+        raise HTTPException(
+            status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            f"Source is too large ({n_bytes} bytes). The limit is {limit} bytes; "
+            "please split it into smaller sources.",
+        )
+
+
 @router.post("/text", response_model=SourceOut, status_code=status.HTTP_201_CREATED)
 def create_text_source(body: CreateTextSourceRequest,
                        project: dict = Depends(require_project_owner)):
+    data = body.text.encode("utf-8")
+    _check_size(len(data))
+
     storage = get_storage()
     src = sources_repo.create_source(
         project_id=str(project["id"]), type_="text_paste",
@@ -29,11 +44,12 @@ def create_text_source(body: CreateTextSourceRequest,
         status="uploaded",
     )
     key = source_key(str(project["user_id"]), str(project["id"]), str(src["id"]), "original.txt")
-    uri = storage.put(key, body.text.encode("utf-8"))
-    sources_repo.set_source_status(str(src["id"]), "uploaded")
-    # store uri
-    with_uri = sources_repo.get_source(str(src["id"]))
-    return SourceOut.from_row(with_uri or src)
+    uri = storage.put(key, data)
+    sources_repo.set_object_storage_uri(str(src["id"]), uri)  # persist the storage uri
+    emit("source_uploaded", project_id=str(project["id"]), source_id=str(src["id"]),
+         type="text_paste", bytes=len(data))
+
+    return SourceOut.from_row(sources_repo.get_source(str(src["id"])) or src)
 
 
 @router.post("", response_model=SourceOut, status_code=status.HTTP_201_CREATED)
@@ -47,7 +63,8 @@ async def upload_source(project: dict = Depends(require_project_owner),
         )
     data = await file.read()
     if not data:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Uploaded file is empty.")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "The uploaded file is empty.")
+    _check_size(len(data))
 
     storage = get_storage()
     src = sources_repo.create_source(
@@ -56,8 +73,12 @@ async def upload_source(project: dict = Depends(require_project_owner),
     )
     key = source_key(str(project["user_id"]), str(project["id"]),
                      str(src["id"]), file.filename or f"original.{type_}")
-    storage.put(key, data)
-    return SourceOut.from_row(src)
+    uri = storage.put(key, data)
+    sources_repo.set_object_storage_uri(str(src["id"]), uri)  # persist the storage uri
+    emit("source_uploaded", project_id=str(project["id"]), source_id=str(src["id"]),
+         type=type_, bytes=len(data))
+
+    return SourceOut.from_row(sources_repo.get_source(str(src["id"])) or src)
 
 
 @router.get("", response_model=list[SourceOut])

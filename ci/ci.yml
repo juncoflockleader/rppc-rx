@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # pgvector image so the `vector` extension is available (001_extensions.sql).
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: podcast_synthesis
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d podcast_synthesis"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/podcast_synthesis
+      DEV_BEARER_TOKEN: test-token
+      JOB_QUEUE_BACKEND: inproc
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,queue]"
+
+      - name: Lint (non-blocking for M1)
+        working-directory: backend
+        run: ruff check app tests
+        continue-on-error: true
+
+      - name: Run tests (unit + integration)
+        # The integration fixture builds the schema from migrations against the
+        # service Postgres, so no separate migrate step is needed.
+        working-directory: backend
+        run: pytest -q

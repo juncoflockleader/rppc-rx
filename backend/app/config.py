@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     local_storage_root: str = "./.storage"
     signed_url_expiry_seconds: int = 3600
 
+    # Limits (design §22.3). 10 MB default per source for the MVP.
+    max_source_bytes: int = 10 * 1024 * 1024
+
     # Provider adapters (later milestones)
     llm_provider: str = "fake"
     llm_api_key: str = ""

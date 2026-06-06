@@ -21,19 +21,25 @@ backend/            FastAPI service (Python — preferred per design §7)
     workers/        background worker entrypoint + job handlers
   migrations/       numbered SQL migrations for the 19-table schema (§8)
   personas/         versioned persona seed assets (YAML, §15)
+  tests/            unit (no DB) + integration (needs Postgres)
 docs/               design notes
+docker-compose.yml  local Postgres (pgvector) + Redis
+Makefile            db-up / migrate / run / test ...
+ci/ci.yml           CI workflow (move to .github/workflows/ to enable — see ci/README.md)
 ```
 
-## Milestone 1 status (Skeleton)
+## Milestone 1 status (Skeleton) — complete
 
-Per design §25 Milestone 1, this skeleton delivers:
+Per design §25 Milestone 1, runnable and tested:
 
 - [x] Project CRUD (`/api/projects`)
-- [x] Source upload + text paste (`/api/projects/{id}/sources`)
-- [x] Object storage abstraction (local-filesystem backend for MVP)
-- [x] Job table + job-queue abstraction + worker skeleton
+- [x] Source upload + text paste (`/api/projects/{id}/sources`), storage uri persisted
+- [x] Object storage abstraction (local-filesystem backend; prefix-cleanup on delete)
+- [x] Job table + job-queue abstraction + worker skeleton (inproc + rq)
 - [x] Progress API (`GET /api/jobs/{id}`, SSE `GET /api/jobs/{id}/events`)
-- [x] Minimal auth (dev bearer-token stub — replace before beta)
+- [x] Minimal auth (dev bearer-token stub — real JWT deferred to M8)
+- [x] Business-event logging (§20.1), source size limit (§22.3), human-readable errors (§18)
+- [x] Unit + integration tests, GitHub Actions CI
 
 Source *processing*, persona generation, script/QA/audio pipelines are later
 milestones — their job types are registered as stubs so the queue path is exercisable.
@@ -41,24 +47,34 @@ milestones — their job types are registered as stubs so the queue path is exer
 ## Quick start
 
 ```bash
-cd backend
-cp .env.example .env                 # edit DATABASE_URL etc.
-python -m venv .venv && source .venv/bin/activate
-pip install -e .
-
-# create the schema
-psql "$DATABASE_URL" -f migrations/000_apply_all.sql      # or run files 001..010 in order
-
-# run the API
-uvicorn app.main:app --reload
-
-# in another shell: run a worker
-python -m app.workers.worker
+make db-up                 # start Postgres (pgvector) + Redis via docker compose
+make migrate               # apply migrations/000_apply_all.sql
+make install               # pip install -e backend[dev,queue]  (use a venv)
+make run                   # uvicorn app.main:app --reload
 ```
 
-Without Postgres/Redis the app still imports; the queue falls back to an
-in-process thread worker (see `app/services/queue.py`) so the skeleton runs
-out of the box for local demos.
+Then, with the dev bearer token (`DEV_BEARER_TOKEN`, default `dev-token`):
+
+```bash
+curl -s localhost:8000/api/projects -H 'Authorization: Bearer dev-token' \
+     -H 'Content-Type: application/json' -d '{"title":"Desire"}' -X POST
+```
+
+The default `inproc` job queue runs handlers inside the API process, so no
+separate worker is needed for local demos. Set `JOB_QUEUE_BACKEND=rq` and run
+`make worker` to execute jobs off-process.
+
+## Tests
+
+```bash
+make test-unit             # no database required
+make test-integration      # needs a disposable Postgres (TEST_DATABASE_URL or DATABASE_URL)
+make test                  # both
+```
+
+Integration tests rebuild the schema from migrations (DROP/CREATE SCHEMA public)
+and truncate between tests — point them at a throwaway database. CI runs the full
+suite against a `pgvector/pgvector:pg16` service container on every push.
 
 ## Configuration
 

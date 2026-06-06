@@ -38,6 +38,14 @@ def list_sources(project_id: str) -> list[dict]:
         ).fetchall()
 
 
+def set_object_storage_uri(source_id: str, uri: str) -> None:
+    with get_conn() as conn:
+        conn.execute(
+            "UPDATE sources SET object_storage_uri = %s, updated_at = now() WHERE id = %s",
+            (uri, source_id),
+        )
+
+
 def set_source_status(source_id: str, status: str,
                       parsed_text_uri: Optional[str] = None) -> None:
     with get_conn() as conn:

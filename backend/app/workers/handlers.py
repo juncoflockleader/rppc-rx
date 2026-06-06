@@ -10,6 +10,7 @@ from __future__ import annotations
 import time
 from typing import Any, Callable, Dict
 
+from ..observability import emit
 from ..repositories import jobs as jobs_repo
 from ..repositories import sources as sources_repo
 
@@ -50,6 +51,7 @@ def source_ingestion(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         jobs_repo.set_progress(job_id, pct)
         time.sleep(0.2)  # simulate work
     sources_repo.set_source_status(source_id, "processed")
+    emit("source_processed", source_id=source_id)
     return {"source_id": source_id, "note": "M1 stub — real ingestion lands in M2"}
 
 
