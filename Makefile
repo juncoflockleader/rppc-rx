@@ -24,6 +24,9 @@ migrate: ## Apply all migrations
 	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f backend/migrations/000_apply_all.sql
 	@echo "migrations applied."
 
+seed-personas: ## Import persona YAML seeds into the DB + canon index (run after migrate)
+	cd backend && python -m app.personas_import
+
 install: ## Install backend (editable) with dev + queue extras
 	cd backend && pip install -e ".[dev,queue]"
 

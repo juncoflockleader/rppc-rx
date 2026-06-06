@@ -37,3 +37,21 @@ def get_persona(persona_id: str, version: str | None = None) -> Dict[str, Any] |
         if p.get("persona_id") == persona_id and (version is None or p.get("version") == version):
             return p
     return None
+
+
+def load_corpus_manifest(persona_id: str) -> Dict[str, Any]:
+    """Load a persona's corpus manifest (empty dict if none)."""
+    path = PERSONAS_DIR / persona_id / "corpus_manifest.yaml"
+    if not path.is_file():
+        return {}
+    with open(path, "r", encoding="utf-8") as fh:
+        return yaml.safe_load(fh) or {}
+
+
+def read_seed_text(persona_id: str, seed_file: str) -> str:
+    """Read a bundled canon excerpt referenced by a manifest doc's seed_file."""
+    path = (PERSONAS_DIR / persona_id / seed_file).resolve()
+    base = (PERSONAS_DIR / persona_id).resolve()
+    if not str(path).startswith(str(base)):
+        raise ValueError("seed_file path traversal blocked")
+    return path.read_text(encoding="utf-8")

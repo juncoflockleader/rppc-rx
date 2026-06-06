@@ -57,8 +57,27 @@ Per design §25 M2, a source now becomes structured, retrievable data:
 - [x] `GET /api/sources/{id}/summary` (§12.2)
 - [x] Unit + integration tests on fake providers (no network)
 
-Persona DB import, episode planning, script/QA/audio pipelines are later
-milestones — their job types are registered as stubs so the queue path is exercisable.
+## Milestone 3 status (Persona Asset) — complete
+
+Per design §25 M3, personas are versioned DB assets with a canon index:
+
+- [x] Persona import — YAML seeds → `persona_assets` / `persona_versions` (idempotent upsert)
+- [x] `persona_canon` index (migration 012) — bundled public-domain excerpts
+      (Tao Te Ching/Legge, Dhammapada/Müller) chunked + embedded per version (§10)
+- [x] Canon retrieval — `search_canon(version_id, query_vec, k)` cosine search
+- [x] DB-backed persona library API (`/api/personas`, `/api/personas/{id}/versions/{v}`)
+- [x] Persona usability/safety guard (§19.1) — status + prohibited-type checks
+- [x] `make seed-personas` (run after `make migrate`)
+- [x] Unit + integration tests (import, canon retrieval, idempotency, API, safety)
+
+Seed the library after migrating:
+
+```bash
+make seed-personas        # python -m app.personas_import
+```
+
+Episode planning, script/QA/audio pipelines are later milestones — their job
+types are registered as stubs so the queue path is exercisable.
 
 ## Quick start
 

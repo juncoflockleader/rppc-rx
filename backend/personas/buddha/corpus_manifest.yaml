@@ -11,6 +11,7 @@ documents:
     license: public_domain
     language: en
     text_uri: null
+    seed_file: canon/dhammapada_muller.txt    # bundled public-domain excerpt (M3)
     concepts: [craving, mind, impermanence, ethical conduct]
   - id: sbe_suttas
     title: Selected early suttas (Sacred Books of the East, public-domain renderings)

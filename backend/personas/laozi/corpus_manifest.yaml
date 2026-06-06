@@ -13,6 +13,7 @@ documents:
     license: public_domain
     language: en
     text_uri: null
+    seed_file: canon/tao_te_ching_legge.txt   # bundled public-domain excerpt (M3)
     concepts: [dao, wu wei, naturalness, simplicity, softness, governance]
   - id: tao_te_ching_goddard
     title: Tao Te Ching (Goddard/Wai-tao rendering)

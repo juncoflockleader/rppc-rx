@@ -20,5 +20,6 @@ BEGIN;
 \ir 009_jobs.sql
 \ir 010_feedback.sql
 \ir 011_chunk_embeddings.sql
+\ir 012_persona_canon.sql
 
 COMMIT;

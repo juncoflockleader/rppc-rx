@@ -1,26 +1,30 @@
-"""Persona library routes (design §12.3). M1: read-only from YAML seeds."""
+"""Persona library routes (design §12.3). M3: DB-backed (populated by import).
+
+Run `python -m app.personas_import` (or `make seed-personas`) after migrations
+to populate persona_assets / persona_versions / persona_canon.
+"""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..auth import get_current_user
-from ..services.persona_loader import get_persona, load_personas
+from ..repositories import personas as repo
 
 router = APIRouter(prefix="/api/personas", tags=["personas"])
 
 
 @router.get("")
 def list_personas(_user: dict = Depends(get_current_user)):
-    # Card-level summary; full asset is fetched per version.
     out = []
-    for p in load_personas():
+    for r in repo.list_assets_with_latest():
+        identity = r.get("identity_profile") or {}
         out.append({
-            "persona_id": p.get("persona_id"),
-            "version": p.get("version"),
-            "display_name": p.get("display_name"),
-            "type": p.get("type"),
-            "status": p.get("status"),
-            "summary": (p.get("identity_profile") or {}).get("summary"),
+            "persona_id": r["id"],
+            "version": r["version"],
+            "display_name": r["display_name"],
+            "type": r["type"],
+            "status": r["version_status"],
+            "summary": identity.get("summary"),
         })
     return out
 
@@ -28,7 +32,23 @@ def list_personas(_user: dict = Depends(get_current_user)):
 @router.get("/{persona_id}/versions/{version}")
 def get_persona_version(persona_id: str, version: str,
                         _user: dict = Depends(get_current_user)):
-    p = get_persona(persona_id, version)
-    if p is None:
+    v = repo.get_version(persona_id, version)
+    if v is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Persona version not found.")
-    return p
+    asset = repo.get_asset(persona_id) or {}
+    return {
+        "persona_id": persona_id,
+        "version": v["version"],
+        "display_name": asset.get("display_name"),
+        "type": asset.get("type"),
+        "status": v["status"],
+        "identity_profile": v["identity_profile"],
+        "knowledge_boundary": v["knowledge_boundary"],
+        "stance_matrix": v["stance_matrix"],
+        "style_profile": v["style_profile"],
+        "forbidden_moves": v["forbidden_moves"],
+        "voice_profile": v["voice_profile"],
+        "prompt_pack": v["prompt_pack"],
+        "eval_summary": v["eval_summary"],
+        "release_notes": v["release_notes"],
+    }

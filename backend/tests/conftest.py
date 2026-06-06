@@ -37,7 +37,8 @@ DATA_TABLES = [
     "segment_evidence_links", "script_segments", "script_versions",
     "discussion_plans", "episode_personas", "episodes", "source_claims",
     "source_chunks", "sources", "projects", "users",
-    "persona_corpus_docs", "persona_versions", "persona_assets",
+    "persona_canon_chunks", "persona_corpus_docs", "persona_versions",
+    "persona_assets",
 ]
 
 
@@ -106,3 +107,11 @@ def client(clean_db):
 @pytest.fixture
 def auth():
     return {"Authorization": f"Bearer {os.environ['DEV_BEARER_TOKEN']}"}
+
+
+@pytest.fixture
+def seeded_personas(clean_db):
+    """Import the persona YAML seeds into the (clean) test DB."""
+    from app.personas_import import import_personas
+
+    return import_personas()
