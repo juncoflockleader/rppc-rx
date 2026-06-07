@@ -80,8 +80,9 @@ def latest(episode_id: str, user: dict = Depends(get_current_user)):
             "text": s["text"], "estimated_seconds": s["estimated_seconds"],
             "status": s["status"], "evidence": ev,
         })
-    return {"episode_id": episode_id, "version": version["version"],
-            "status": version["status"],
+    return {"episode_id": episode_id, "script_version_id": str(version["id"]),
+            "version": version["version"], "status": version["status"],
+            "safety_status": version["safety_status"],
             "total_estimated_seconds": version["total_estimated_seconds"],
             "metadata": version["metadata"], "segments": segments}
 

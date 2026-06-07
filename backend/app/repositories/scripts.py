@@ -95,11 +95,52 @@ def list_evidence(segment_id: str) -> List[dict]:
         ).fetchall()
 
 
+def get_version_by_id(version_id: str) -> Optional[dict]:
+    with get_conn() as conn:
+        return conn.execute(
+            "SELECT * FROM script_versions WHERE id = %s", (version_id,)
+        ).fetchone()
+
+
 def get_segment(segment_id: str) -> Optional[dict]:
     with get_conn() as conn:
         return conn.execute(
             "SELECT * FROM script_segments WHERE id = %s", (segment_id,)
         ).fetchone()
+
+
+def list_needs_review(version_id: str) -> List[dict]:
+    with get_conn() as conn:
+        return conn.execute(
+            """
+            SELECT * FROM script_segments
+             WHERE script_version_id = %s AND status = 'needs_review'
+             ORDER BY segment_index
+            """,
+            (version_id,),
+        ).fetchall()
+
+
+def update_segment_qa(segment_id: str, qa_json: Dict[str, Any], status: Optional[str]) -> None:
+    with get_conn() as conn:
+        if status is not None:
+            conn.execute(
+                "UPDATE script_segments SET qa_json = %s, status = %s, updated_at = now() WHERE id = %s",
+                (json.dumps(qa_json), status, segment_id),
+            )
+        else:
+            conn.execute(
+                "UPDATE script_segments SET qa_json = %s, updated_at = now() WHERE id = %s",
+                (json.dumps(qa_json), segment_id),
+            )
+
+
+def set_version_qa(version_id: str, qa_summary: Dict[str, Any], safety_status: str) -> None:
+    with get_conn() as conn:
+        conn.execute(
+            "UPDATE script_versions SET qa_summary = %s, safety_status = %s WHERE id = %s",
+            (json.dumps(qa_summary), safety_status, version_id),
+        )
 
 
 def update_segment_text(segment_id: str, text: str, estimated_seconds: int) -> dict:

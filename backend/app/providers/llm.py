@@ -184,6 +184,12 @@ class FakeLLMProvider(LLMProvider):
             return self._canned_script(req)
         if req.task_name.startswith("segment_rewrite"):
             return {"text": "[rewritten] " + req.metadata.get("instruction", "tightened.")}
+        if req.task_name.startswith("source_grounding_qa"):
+            return {"score": 0.9, "warnings": []}
+        if req.task_name.startswith("persona_fidelity_qa"):
+            labels = req.metadata.get("speaker_labels", [])
+            return {"persona_scores": {label: 0.85 for label in labels},
+                    "distinctiveness_score": 0.8, "warnings": []}
         return {}
 
     def _canned_script(self, req: LLMRequest) -> Dict[str, Any]:

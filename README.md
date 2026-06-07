@@ -101,8 +101,26 @@ Per design §25 M5 / §11.5 — discussion plan → editable segment-level scrip
 - [x] Segment edit (`PATCH`) and LLM rewrite (`POST .../rewrite`) — re-estimated, marked `edited`
 - [x] Unit + integration tests (generator/estimate, full generate→edit→rewrite flow)
 
-Script QA and audio pipelines are later milestones — their job types are
-registered as stubs so the queue path is exercisable.
+## Milestone 6 status (Script QA) — complete
+
+Per design §25 M6 / §11.6–11.7 — quality review made explicit and gated:
+
+- [x] Seven QA dimensions over a script (background `script_qa` job):
+      source-grounding (LLM entailment), persona-fidelity (LLM), **distinctiveness
+      (engineered embedding proxy)**, anachronism, safety, dialogue-quality, audio-readiness
+- [x] Per-segment warnings; high-severity findings flag segments `needs_review`
+- [x] First-class **safety gate** `script_versions.safety_status` (migration 014) — `high_risk`
+      blocks audio in M7 (§19.5)
+- [x] QA panel API (`POST/GET /api/scripts/{id}/qa`) + rolled-up `qa_summary`
+- [x] One-click repair (`POST /api/scripts/{id}/repair`) — LLM-rewrites flagged segments (§11.7)
+- [x] Unit + integration tests (each check, panel, anachronism→repair, safety gate)
+
+Two M0-critique items are now addressed: distinctiveness is *measured* (centroid
+separation), not just LLM-scored; and source-grounding does entailment, not just
+"does the claim id resolve."
+
+Audio pipelines are later milestones — their job types are registered as stubs
+so the queue path is exercisable.
 
 ## Quick start
 

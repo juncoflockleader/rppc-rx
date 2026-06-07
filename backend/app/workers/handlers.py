@@ -62,6 +62,18 @@ def source_ingestion(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
+@register("script_qa")
+def script_qa(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Run all QA dimensions over a script version (design §11.6)."""
+    from ..qa.pipeline import run_qa
+
+    result = run_qa(payload["script_version_id"],
+                    progress=lambda p: jobs_repo.set_progress(job_id, p))
+    emit("qa_completed", script_version_id=payload["script_version_id"],
+         safety_status=result["safety_status"])
+    return result
+
+
 @register("episode_planning")
 def episode_planning(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     """Role context cards + discussion plan (design §11.3-11.4)."""
@@ -106,7 +118,6 @@ def _todo(milestone: str) -> Handler:
 for _jt, _ms in {
     "claim_extraction": "M2",
     "embedding": "M2",
-    "script_qa": "M6",
     "voice_direction": "M7",
     "audio_render": "M7",
     "audio_mix": "M7",

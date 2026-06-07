@@ -22,5 +22,6 @@ BEGIN;
 \ir 011_chunk_embeddings.sql
 \ir 012_persona_canon.sql
 \ir 013_role_context.sql
+\ir 014_script_qa.sql
 
 COMMIT;
