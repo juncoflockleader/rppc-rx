@@ -25,7 +25,7 @@ def _check_size(n_bytes: int) -> None:
     limit = get_settings().max_source_bytes
     if n_bytes > limit:
         raise HTTPException(
-            status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            getattr(status, "HTTP_413_CONTENT_TOO_LARGE", 413),
             f"Source is too large ({n_bytes} bytes). The limit is {limit} bytes; "
             "please split it into smaller sources.",
         )
