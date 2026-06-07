@@ -165,7 +165,14 @@ tests (58 unit + 30 integration) against a real pgvector Postgres in CI.
 - [x] Script editor (`/episodes/[id]/script`) — generate script, per-segment edit +
       LLM rewrite, **evidence badges** + per-segment **QA warnings**, **QA panel**
       (7 dimension scores + safety gate) and one-click **repair**
-- [ ] Audio player, export screen
+- [x] Audio (`/episodes/[id]/audio`) — render (safety-gated), in-browser player,
+      per-segment re-render, stale-mix indicator, WAV download
+- [x] Export (`/episodes/[id]/export`) — package zip + download, per-episode cost,
+      thumbs feedback, disclaimer
+
+The full creative loop now works in the browser, end to end: **projects → source
+→ personas → episode → outline → script + QA → audio → export**. Every screen is
+smoke-tested against a live backend via `scripts/smoke_frontend_api.sh`.
 
 Run it:
 

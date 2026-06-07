@@ -100,9 +100,19 @@ export default function ScriptPage() {
         >
           ← Outline
         </Link>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-          Script {episode.data?.title ? `— ${episode.data.title}` : ""}
-        </h1>
+        <div className="mt-1 flex items-center justify-between">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Script {episode.data?.title ? `— ${episode.data.title}` : ""}
+          </h1>
+          {script && (
+            <Link
+              href={`/episodes/${id}/audio`}
+              className="text-sm text-neutral-500 hover:text-neutral-900"
+            >
+              Audio &amp; export →
+            </Link>
+          )}
+        </div>
       </div>
 
       <Card className="flex flex-wrap items-center justify-between gap-3">

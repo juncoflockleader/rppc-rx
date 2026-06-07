@@ -108,4 +108,32 @@ done
 echo "qa job: ${QST}"
 api "${B}/api/scripts/${VID}/qa" | python -c "import sys,json;d=json.load(sys.stdin);print('safety=',d['safety_status'],'| reports:',sorted(r['report_type'] for r in d['reports']))"
 echo "repair:"; api -X POST "${B}/api/scripts/${VID}/repair" | python -c "import sys,json;print(json.load(sys.stdin)['count'],'segment(s) repaired')"
+
+echo "== audio render =="
+AJID=$(api -X POST "${B}/api/episodes/${EID}/audio" | python -c "import sys,json;print(json.load(sys.stdin)['job_id'])")
+for _ in $(seq 1 120); do
+  AST=$(api "${B}/api/jobs/${AJID}" | python -c "import sys,json;print(json.load(sys.stdin)['status'])")
+  [ "${AST}" = "completed" ] || [ "${AST}" = "failed" ] && break; sleep 0.5
+done
+echo "audio job: ${AST}"
+DURL=$(api "${B}/api/episodes/${EID}/audio/latest" | python -c "import sys,json;d=json.load(sys.stdin);print(d['download_url'])")
+TMPA=$(mktemp); api "${B}${DURL}" -o "${TMPA}"; HDR=$(head -c 4 "${TMPA}" | tr -d '\0'); rm -f "${TMPA}"
+echo "audio download starts with: ${HDR}  (expect RIFF)"
+
+echo "== export =="
+XJID=$(api -X POST "${B}/api/episodes/${EID}/export" | python -c "import sys,json;print(json.load(sys.stdin)['job_id'])")
+for _ in $(seq 1 120); do
+  XST=$(api "${B}/api/jobs/${XJID}" | python -c "import sys,json;print(json.load(sys.stdin)['status'])")
+  [ "${XST}" = "completed" ] || [ "${XST}" = "failed" ] && break; sleep 0.5
+done
+echo "export job: ${XST}"
+XURL=$(api "${B}/api/episodes/${EID}/export/latest" | python -c "import sys,json;d=json.load(sys.stdin);print(' '.join(d['manifest']['files']));import sys" )
+echo "package files: ${XURL}"
+DL=$(api "${B}/api/episodes/${EID}/export/latest" | python -c "import sys,json;print(json.load(sys.stdin)['download_url'])")
+TMPZ=$(mktemp); api "${B}${DL}" -o "${TMPZ}"; ZHDR=$(head -c 2 "${TMPZ}"); rm -f "${TMPZ}"
+echo "zip download starts with: ${ZHDR}  (expect PK)"
+
+echo "== cost =="; api "${B}/api/episodes/${EID}/cost" | python -c "import sys,json;d=json.load(sys.stdin);print('llm_calls=%d tts_calls=%d est=\$%s'%(d['llm_calls'],d['tts_calls'],d['estimated_llm_cost_usd']))"
+echo "== feedback =="; api -X POST "${B}/api/feedback" -d '{"target_type":"episode","target_id":"'"${EID}"'","episode_id":"'"${EID}"'","feedback_type":"thumbs","rating":1}' | python -c "import sys,json;print(json.load(sys.stdin)['status'])"
+echo "== notices =="; api "${B}/api/meta/notices" | python -c "import sys,json;print('disclaimer present:', bool(json.load(sys.stdin)['disclaimer_en']))"
 echo "SMOKE_OK"

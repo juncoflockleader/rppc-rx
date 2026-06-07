@@ -1,11 +1,15 @@
 // Typed client for the Podcast Synthesis backend. Sends the dev bearer token
 // and unwraps the backend's {error:{message}} envelope into thrown Errors.
 import type {
+  AudioMix,
+  Cost,
   DiscussionPlan,
   Episode,
   EpisodeParticipant,
+  ExportInfo,
   Job,
   JobRef,
+  Notices,
   PersonaCard,
   PersonaVersion,
   Project,
@@ -150,6 +154,47 @@ export const repairScript = (versionId: string) =>
     `/api/scripts/${versionId}/repair`,
     { method: "POST" }
   );
+
+// Authed binary fetch — for <audio> playback and zip downloads, where the
+// browser can't attach the Authorization header to a bare URL.
+export async function fetchBlobUrl(path: string): Promise<string> {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: { Authorization: `Bearer ${TOKEN}` },
+  });
+  if (!res.ok) throw new ApiException(res.status, `Download failed (${res.status})`);
+  return URL.createObjectURL(await res.blob());
+}
+
+// --- Audio ---
+export const renderAudio = (episodeId: string) =>
+  request<JobRef>(`/api/episodes/${episodeId}/audio`, { method: "POST" });
+export const getLatestAudio = (episodeId: string) =>
+  request<AudioMix>(`/api/episodes/${episodeId}/audio/latest`);
+export const rerenderSegmentAudio = (segmentId: string) =>
+  request<JobRef>(`/api/script-segments/${segmentId}/audio`, { method: "POST" });
+
+// --- Export / cost / feedback / notices ---
+export const exportEpisode = (episodeId: string) =>
+  request<JobRef>(`/api/episodes/${episodeId}/export`, { method: "POST" });
+export const getLatestExport = (episodeId: string) =>
+  request<ExportInfo>(`/api/episodes/${episodeId}/export/latest`);
+export const getCost = (episodeId: string) =>
+  request<Cost>(`/api/episodes/${episodeId}/cost`);
+export const submitFeedback = (body: {
+  target_type: string;
+  target_id?: string;
+  feedback_type?: string;
+  rating?: number;
+  tags?: string[];
+  comment?: string;
+  project_id?: string;
+  episode_id?: string;
+}) =>
+  request<{ id: string; status: string }>("/api/feedback", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+export const getNotices = () => request<Notices>("/api/meta/notices");
 
 // --- Jobs ---
 export const getJob = (jobId: string) => request<Job>(`/api/jobs/${jobId}`);

@@ -190,3 +190,37 @@ export type SegmentUpdate = {
   estimated_seconds: number;
   status: string;
 };
+
+// --- Audio / export / cost / feedback ---
+export type AudioMix = {
+  episode_id: string;
+  mix_id: string;
+  status: string; // completed | stale
+  format: string;
+  duration_ms?: number | null;
+  download_url: string;
+};
+
+export type ExportInfo = {
+  episode_id: string;
+  export_id: string;
+  format: string;
+  manifest: { files: string[]; has_audio: boolean; segment_count: number };
+  download_url: string;
+};
+
+export type Cost = {
+  llm_input_tokens: number;
+  llm_output_tokens: number;
+  llm_calls: number;
+  tts_chars: number;
+  tts_duration_ms: number;
+  tts_calls: number;
+  estimated_llm_cost_usd: number;
+};
+
+export type Notices = {
+  disclaimer_en: string;
+  disclaimer_zh: string;
+  source_copyright: string;
+};
