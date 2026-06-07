@@ -18,6 +18,7 @@ def test_unknown_job_type_raises():
 
 
 def test_later_milestone_handlers_are_stubs():
-    fn = handlers.get_handler("script_generation")
+    # voice_direction lands in M7; still a stub.
+    fn = handlers.get_handler("voice_direction")
     with pytest.raises(NotImplementedError):
         fn("job", {})

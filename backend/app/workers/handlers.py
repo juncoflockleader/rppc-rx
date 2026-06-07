@@ -79,6 +79,22 @@ def episode_planning(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
+@register("script_generation")
+def script_generation(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Discussion plan -> segment-level script with evidence links (design §11.5)."""
+    from ..repositories import episodes as ep_repo
+    from ..scripting.pipeline import generate_script
+
+    episode_id = payload["episode_id"]
+    try:
+        result = generate_script(episode_id, progress=lambda p: jobs_repo.set_progress(job_id, p))
+    except Exception:
+        ep_repo.set_episode_status(episode_id, "failed")
+        raise
+    emit("script_generated", episode_id=episode_id, segments=result["segments"])
+    return result
+
+
 # --- Later-milestone placeholders (registered so the queue accepts them) -----
 
 def _todo(milestone: str) -> Handler:
@@ -90,7 +106,6 @@ def _todo(milestone: str) -> Handler:
 for _jt, _ms in {
     "claim_extraction": "M2",
     "embedding": "M2",
-    "script_generation": "M5",
     "script_qa": "M6",
     "voice_direction": "M7",
     "audio_render": "M7",

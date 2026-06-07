@@ -180,7 +180,48 @@ class FakeLLMProvider(LLMProvider):
                 "beats": beats,
                 "ending": {"takeaway": "Less forcing, clearer seeing."},
             }
+        if req.task_name.startswith("script_generation"):
+            return self._canned_script(req)
+        if req.task_name.startswith("segment_rewrite"):
+            return {"text": "[rewritten] " + req.metadata.get("instruction", "tightened.")}
         return {}
+
+    def _canned_script(self, req: LLMRequest) -> Dict[str, Any]:
+        beats = req.metadata.get("beats", [])
+        host = req.metadata.get("host_label", "HOST")
+        claim_ids = req.metadata.get("claim_ids", [])
+        concepts = req.metadata.get("concepts", []) or ["the point"]
+        segs: List[Dict[str, Any]] = []
+        idx = 1
+        for b_i, b in enumerate(beats):
+            beat_id = b.get("beat_id", f"beat_{b_i}")
+            speaker = b.get("primary_speaker", host)
+            if speaker == host:
+                evidence = [{"type": "host_bridge"}]
+                if claim_ids:
+                    evidence.append({"type": "source_material", "claim_id": claim_ids[0]})
+                text = ("Here's the question from the material, in plain terms, "
+                        "and what each of you makes of it.")
+            else:
+                evidence = [{"type": "persona_canon", "concept": concepts[b_i % len(concepts)]},
+                            {"type": "creative_bridge"}]
+                text = ("Speaking from where I stand, the matter looks different "
+                        "than the forcing the modern world prefers.")
+            segs.append({"segment_index": idx, "beat_id": beat_id,
+                         "speaker_label": speaker, "text": text,
+                         "estimated_seconds": 12, "evidence": evidence})
+            idx += 1
+            # Host steps in after each guest beat (design §11.5 cadence).
+            if speaker != host:
+                segs.append({
+                    "segment_index": idx, "beat_id": beat_id, "speaker_label": host,
+                    "text": "So, to put that in modern terms for our listeners...",
+                    "estimated_seconds": 8,
+                    "evidence": [{"type": "host_bridge"}]
+                    + ([{"type": "source_material", "claim_id": claim_ids[0]}] if claim_ids else []),
+                })
+                idx += 1
+        return {"segments": segs}
 
 
 # --- Anthropic --------------------------------------------------------------

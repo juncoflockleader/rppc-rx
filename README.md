@@ -88,8 +88,21 @@ Per design §25 M4 / §11.2–11.4 — the first stage that uses M2 claims *and*
 - [x] `role_context_cards` table (migration 013), versioned for regeneration
 - [x] Unit + integration tests (generators, full create→plan flow, regenerate, validation)
 
-Script generation, QA, and audio pipelines are later milestones — their job
-types are registered as stubs so the queue path is exercisable.
+## Milestone 5 status (Script Studio) — complete
+
+Per design §25 M5 / §11.5 — discussion plan → editable segment-level script:
+
+- [x] Script generation (background `script_generation` job): plan + role context
+      cards + claims → segments, one speaker each, host owns modern terms (§11.5)
+- [x] Segment-level storage (§4.2) with per-segment **evidence links** (§8.14) —
+      source_material links validated against real claims, else `needs_review`
+- [x] Per-speaker second estimates (§27.1) + speaker-share metadata
+- [x] Script versioning; `GET /api/episodes/{id}/scripts/latest` with evidence
+- [x] Segment edit (`PATCH`) and LLM rewrite (`POST .../rewrite`) — re-estimated, marked `edited`
+- [x] Unit + integration tests (generator/estimate, full generate→edit→rewrite flow)
+
+Script QA and audio pipelines are later milestones — their job types are
+registered as stubs so the queue path is exercisable.
 
 ## Quick start
 

@@ -101,6 +101,13 @@ def get_asset(persona_id: str) -> Optional[dict]:
         ).fetchone()
 
 
+def get_version_by_id(version_id: str) -> Optional[dict]:
+    with get_conn() as conn:
+        return conn.execute(
+            "SELECT * FROM persona_versions WHERE id = %s", (version_id,)
+        ).fetchone()
+
+
 # --- corpus docs / canon index ---------------------------------------------
 
 def delete_canon_for_version(persona_version_id: str) -> None:
