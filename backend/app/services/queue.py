@@ -27,10 +27,16 @@ log = logging.getLogger("queue")
 
 def run_job(job_id: str, job_type: str, payload: Dict[str, Any]) -> None:
     """Execute one job through its handler, driving the §17.1 state machine."""
+    from ..usage import using_context
+
     jobs_repo.mark_running(job_id)
+    row = jobs_repo.get_job(job_id) or {}
+    project_id = str(row["project_id"]) if row.get("project_id") else None
+    episode_id = str(row["episode_id"]) if row.get("episode_id") else None
     try:
         handler = get_handler(job_type)
-        output = handler(job_id, payload)
+        with using_context(project_id, episode_id):
+            output = handler(job_id, payload)
         jobs_repo.mark_completed(job_id, output)
     except Exception as exc:  # noqa: BLE001 - we persist all failures
         log.exception("job %s (%s) failed", job_id, job_type)

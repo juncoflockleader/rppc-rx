@@ -68,6 +68,22 @@ class NotImplementedTTSProvider(TTSProvider):
             f"TTS provider '{self._name}' is not wired yet; use TTS_PROVIDER=fake.")
 
 
+class RecordingTTSProvider(TTSProvider):
+    def __init__(self, inner: TTSProvider, name: str) -> None:
+        self._inner = inner
+        self._name = name
+
+    def synthesize(self, req: TTSRequest) -> TTSResult:
+        import time
+
+        from ..usage import record_tts
+        t = time.perf_counter()
+        res = self._inner.synthesize(req)
+        record_tts(self._name, len(req.text), res.duration_ms,
+                   int((time.perf_counter() - t) * 1000))
+        return res
+
+
 _provider: Optional[TTSProvider] = None
 
 
@@ -75,10 +91,9 @@ def get_tts_provider() -> TTSProvider:
     global _provider
     if _provider is None:
         s = get_settings()
-        if s.tts_provider == "fake":
-            _provider = FakeTTSProvider(s.tts_sample_rate)
-        else:
-            _provider = NotImplementedTTSProvider(s.tts_provider)
+        inner = (FakeTTSProvider(s.tts_sample_rate) if s.tts_provider == "fake"
+                 else NotImplementedTTSProvider(s.tts_provider))
+        _provider = RecordingTTSProvider(inner, s.tts_provider)
     return _provider
 
 

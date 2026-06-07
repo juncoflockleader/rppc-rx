@@ -315,6 +315,33 @@ class OpenAILLMProvider(LLMProvider):
                            output_tokens=resp.usage.completion_tokens)
 
 
+class RecordingLLMProvider(LLMProvider):
+    """Wraps a provider to time calls and log usage (design §20.3-20.4)."""
+
+    def __init__(self, inner: LLMProvider) -> None:
+        self._inner = inner
+        self._model = getattr(inner, "_model", "fake")
+
+    def _record(self, req: LLMRequest, resp: LLMResponse, latency_ms: int) -> None:
+        from ..usage import record_llm
+        record_llm(req.task_name, req.prompt_version, self._model,
+                   resp.input_tokens, resp.output_tokens, latency_ms)
+
+    def generate_text(self, req: LLMRequest) -> LLMResponse:
+        import time
+        t = time.perf_counter()
+        resp = self._inner.generate_text(req)
+        self._record(req, resp, int((time.perf_counter() - t) * 1000))
+        return resp
+
+    def generate_json(self, req: LLMRequest, json_schema: Dict[str, Any]) -> LLMResponse:
+        import time
+        t = time.perf_counter()
+        resp = self._inner.generate_json(req, json_schema)
+        self._record(req, resp, int((time.perf_counter() - t) * 1000))
+        return resp
+
+
 _provider: Optional[LLMProvider] = None
 
 
@@ -323,11 +350,12 @@ def get_llm_provider() -> LLMProvider:
     if _provider is None:
         name = get_settings().llm_provider
         if name == "anthropic":
-            _provider = AnthropicLLMProvider()
+            inner: LLMProvider = AnthropicLLMProvider()
         elif name == "openai":
-            _provider = OpenAILLMProvider()
+            inner = OpenAILLMProvider()
         else:
-            _provider = FakeLLMProvider()
+            inner = FakeLLMProvider()
+        _provider = RecordingLLMProvider(inner)
     return _provider
 
 

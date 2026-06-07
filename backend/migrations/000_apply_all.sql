@@ -23,5 +23,6 @@ BEGIN;
 \ir 012_persona_canon.sql
 \ir 013_role_context.sql
 \ir 014_script_qa.sql
+\ir 015_usage_and_exports.sql
 
 COMMIT;

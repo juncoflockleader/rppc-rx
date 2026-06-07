@@ -33,7 +33,8 @@ if _TEST_DB_URL:
 MIGRATIONS_DIR = Path(__file__).resolve().parent.parent / "migrations"
 
 DATA_TABLES = [
-    "feedback_events", "audio_mixes", "audio_segments", "qa_reports",
+    "usage_events", "exports", "feedback_events",
+    "audio_mixes", "audio_segments", "qa_reports",
     "segment_evidence_links", "script_segments", "script_versions",
     "role_context_cards", "discussion_plans", "episode_personas", "episodes",
     "source_claims",

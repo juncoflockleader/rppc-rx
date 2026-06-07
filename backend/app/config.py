@@ -57,6 +57,11 @@ class Settings(BaseSettings):
     # Auth (dev stub)
     jwt_secret: str = "dev-insecure-change-me"
     dev_bearer_token: str = "dev-token"
+    admin_token: str = ""          # gates /api/admin/* ; empty disables admin endpoints
+
+    # Cost estimation ($/1M tokens) for the configured LLM (design §20.3)
+    llm_input_price_per_m: float = 5.0
+    llm_output_price_per_m: float = 25.0
 
     # Job queue: inproc (default, no redis) | rq
     job_queue_backend: str = "inproc"

@@ -62,6 +62,17 @@ def source_ingestion(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
+@register("export_package")
+def export_package(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Package transcript / SRT / show notes / evidence / audio into a zip (§6.8)."""
+    from ..export.pipeline import build_export
+
+    result = build_export(payload["episode_id"],
+                          progress=lambda p: jobs_repo.set_progress(job_id, p))
+    emit("audio_exported", episode_id=payload["episode_id"], export_id=result["export_id"])
+    return result
+
+
 @register("audio_render")
 def audio_render(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     """Voice direction + TTS + mix (design §11.9). Single segment if segment_id set."""
@@ -139,6 +150,5 @@ for _jt, _ms in {
     "embedding": "M2",
     "voice_direction": "M7",
     "audio_mix": "M7",
-    "export_package": "M8",
 }.items():
     _REGISTRY.setdefault(_jt, _todo(_ms))

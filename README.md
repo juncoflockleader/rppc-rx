@@ -132,8 +132,24 @@ Per design §25 M7 / §11.8–11.9 — voice direction → TTS → mix → expor
 - [x] Get-latest + WAV download endpoints
 - [x] Unit + integration tests (TTS/mixer/voice-direction, render→download, re-render+staleness, gate)
 
-Only the export/publish polish (M8) remains — its job types are stubbed so the
-queue path is exercisable.
+## Milestone 8 status (Beta Polish) — complete
+
+Per design §25 M8 (backend subset; onboarding/admin UI are frontend):
+
+- [x] Export package (`export_package` job) — transcript.md / .srt / show_notes.md /
+      evidence_report.json + audio, zipped to storage; disclaimer embedded (§19.2)
+- [x] Cost + debug-trace logging (`usage_events`) via recording decorators over the
+      LLM/TTS providers, attributed per job; `GET /api/episodes/{id}/cost` (§20.3-20.4)
+- [x] Feedback events (`POST /api/feedback`) (§8.19)
+- [x] Privacy/copyright notices (`GET /api/meta/notices`, EN+ZH disclaimer) (§19.2-19.3)
+- [x] Consistent error envelope `{error:{type,message}}` (§18); admin debug endpoint
+- [x] Unit + integration tests (builder, export→zip download, cost, feedback, notices, errors)
+
+**All eight MVP backend milestones are complete** — the full pipeline runs source →
+claims → personas → episode → plan → script → QA → audio → export, verified by 88
+tests (58 unit + 30 integration) against a real pgvector Postgres in CI.
+
+The Next.js frontend (design §16) is the remaining track and has not been started.
 
 ## Quick start
 
