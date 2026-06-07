@@ -43,9 +43,10 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-3-small"
     fake_embedding_dim: int = 64
 
-    # TTS provider adapter (M7)
+    # TTS provider adapter (M7). fake | elevenlabs (stub) | ...
     tts_provider: str = "fake"
     tts_api_key: str = ""
+    tts_sample_rate: int = 16000   # fake renderer output
 
     vector_db_url: str = ""
 

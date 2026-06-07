@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import __version__
-from .api import (episodes, jobs, personas, projects, qa, scripts,
+from .api import (audio, episodes, jobs, personas, projects, qa, scripts,
                   source_summary, sources)
 from .db import close_pool
 
@@ -34,6 +34,7 @@ app.include_router(personas.router)
 app.include_router(episodes.router)
 app.include_router(scripts.router)
 app.include_router(qa.router)
+app.include_router(audio.router)
 app.include_router(jobs.router)
 
 

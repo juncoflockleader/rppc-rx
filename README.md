@@ -119,8 +119,21 @@ Two M0-critique items are now addressed: distinctiveness is *measured* (centroid
 separation), not just LLM-scored; and source-grounding does entailment, not just
 "does the claim id resolve."
 
-Audio pipelines are later milestones — their job types are registered as stubs
-so the queue path is exercisable.
+## Milestone 7 status (Audio) — complete
+
+Per design §25 M7 / §11.8–11.9 — voice direction → TTS → mix → export:
+
+- [x] TTS provider adapter — deterministic `FakeTTSProvider` (valid WAV silence,
+      no network/ffmpeg) + interface for real vendors
+- [x] Voice direction (rule-based from each persona's voice_profile) → segment delivery
+- [x] Per-segment TTS → `audio_segments`; stdlib-`wave` stitch (with pauses) → `audio_mixes`
+- [x] **Safety gate (§19.5)** — `safety_status == high_risk` blocks render (API 409 + pipeline guard)
+- [x] Single-segment re-render; **edit/rewrite/repair mark audio + mix stale** (M0-critique fix)
+- [x] Get-latest + WAV download endpoints
+- [x] Unit + integration tests (TTS/mixer/voice-direction, render→download, re-render+staleness, gate)
+
+Only the export/publish polish (M8) remains — its job types are stubbed so the
+queue path is exercisable.
 
 ## Quick start
 

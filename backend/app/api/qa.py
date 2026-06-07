@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..auth import get_current_user
 from ..observability import emit
+from ..repositories import audio as audio_repo
 from ..repositories import episodes as ep_repo
 from ..repositories import personas as persona_repo
 from ..repositories import projects as projects_repo
@@ -76,8 +77,11 @@ def repair(script_version_id: str, user: dict = Depends(get_current_user)):
         role = role_by_label.get(seg["speaker_label"], "guest")
         scripts_repo.update_segment_text(str(seg["id"]), new_text,
                                          estimate_seconds(new_text, role))
+        audio_repo.mark_segment_audio_stale(str(seg["id"]))
         repaired.append(str(seg["id"]))
 
+    if repaired:
+        audio_repo.mark_episode_mixes_stale(episode_id)
     emit("segment_rerendered", episode_id=episode_id, count=len(repaired), mode="qa_repair")
     return {"repaired_segment_ids": repaired, "count": len(repaired),
             "note": "Re-run QA to refresh scores after repair."}

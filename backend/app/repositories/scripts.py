@@ -135,6 +135,14 @@ def update_segment_qa(segment_id: str, qa_json: Dict[str, Any], status: Optional
             )
 
 
+def set_delivery(segment_id: str, delivery: Dict[str, Any]) -> None:
+    with get_conn() as conn:
+        conn.execute(
+            "UPDATE script_segments SET delivery = %s, updated_at = now() WHERE id = %s",
+            (json.dumps(delivery), segment_id),
+        )
+
+
 def set_version_qa(version_id: str, qa_summary: Dict[str, Any], safety_status: str) -> None:
     with get_conn() as conn:
         conn.execute(

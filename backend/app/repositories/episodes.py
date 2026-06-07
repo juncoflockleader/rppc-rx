@@ -64,7 +64,7 @@ def list_personas(episode_id: str) -> List[dict]:
             """
             SELECT ep.*, pv.persona_id, pv.version, pv.identity_profile,
                    pv.stance_matrix, pv.style_profile, pv.forbidden_moves,
-                   pv.knowledge_boundary
+                   pv.knowledge_boundary, pv.voice_profile
               FROM episode_personas ep
               JOIN persona_versions pv ON pv.id = ep.persona_version_id
              WHERE ep.episode_id = %s

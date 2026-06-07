@@ -62,6 +62,25 @@ def source_ingestion(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
+@register("audio_render")
+def audio_render(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Voice direction + TTS + mix (design §11.9). Single segment if segment_id set."""
+    from ..audio.pipeline import render_episode_audio, render_single_segment
+
+    cb = lambda p: jobs_repo.set_progress(job_id, p)  # noqa: E731
+    if payload.get("segment_id"):
+        result = render_single_segment(payload["episode_id"], payload["script_version_id"],
+                                       payload["segment_id"], progress=cb)
+        emit("segment_rerendered", episode_id=payload["episode_id"],
+             segment_id=payload["segment_id"], mode="audio")
+    else:
+        result = render_episode_audio(payload["episode_id"], payload["script_version_id"],
+                                      progress=cb)
+        emit("audio_generated", episode_id=payload["episode_id"],
+             duration_ms=result["duration_ms"])
+    return result
+
+
 @register("script_qa")
 def script_qa(job_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     """Run all QA dimensions over a script version (design §11.6)."""
@@ -119,7 +138,6 @@ for _jt, _ms in {
     "claim_extraction": "M2",
     "embedding": "M2",
     "voice_direction": "M7",
-    "audio_render": "M7",
     "audio_mix": "M7",
     "export_package": "M8",
 }.items():

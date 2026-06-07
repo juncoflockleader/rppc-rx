@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 from ..auth import get_current_user
 from ..observability import emit
+from ..repositories import audio as audio_repo
 from ..repositories import episodes as ep_repo
 from ..repositories import personas as persona_repo
 from ..repositories import projects as projects_repo
@@ -48,6 +49,12 @@ def _role_for_label(episode_id: str, label: str) -> str:
         if p["speaker_label"] == label:
             return p["role"]
     return "guest"
+
+
+def _invalidate_audio(segment_id: str, episode_id: str) -> None:
+    """Editing a line makes its rendered audio and the final mix stale (§4.2)."""
+    audio_repo.mark_segment_audio_stale(segment_id)
+    audio_repo.mark_episode_mixes_stale(episode_id)
 
 
 # --- script generation / read ----------------------------------------------
@@ -96,6 +103,7 @@ def update_segment(segment_id: str, body: UpdateSegmentRequest,
     role = _role_for_label(str(seg["episode_id"]), seg["speaker_label"])
     row = scripts_repo.update_segment_text(
         segment_id, body.text, estimate_seconds(body.text, role))
+    _invalidate_audio(segment_id, str(seg["episode_id"]))
     emit("segment_rewritten", episode_id=str(seg["episode_id"]), segment_id=segment_id,
          mode="manual_edit")
     return {"id": str(row["id"]), "text": row["text"],
@@ -123,6 +131,7 @@ def rewrite(segment_id: str, body: RewriteSegmentRequest,
                                {"speaker_label": seg["speaker_label"], "text": seg["text"]},
                                body.instruction, brief)
     row = scripts_repo.update_segment_text(segment_id, new_text, estimate_seconds(new_text, role))
+    _invalidate_audio(segment_id, str(seg["episode_id"]))
     emit("segment_rewritten", episode_id=str(seg["episode_id"]), segment_id=segment_id,
          mode="llm_rewrite")
     return {"id": str(row["id"]), "text": row["text"],
