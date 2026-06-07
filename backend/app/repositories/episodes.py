@@ -33,6 +33,14 @@ def get_episode(episode_id: str) -> Optional[dict]:
         ).fetchone()
 
 
+def list_for_project(project_id: str) -> List[dict]:
+    with get_conn() as conn:
+        return conn.execute(
+            "SELECT * FROM episodes WHERE project_id = %s ORDER BY created_at DESC",
+            (project_id,),
+        ).fetchall()
+
+
 def set_episode_status(episode_id: str, status: str) -> None:
     with get_conn() as conn:
         conn.execute(

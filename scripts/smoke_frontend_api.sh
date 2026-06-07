@@ -63,4 +63,23 @@ echo "job status: ${ST}"
 echo "== summary =="; api "${B}/api/sources/${SID}/summary"
 echo
 echo "== personas =="; api "${B}/api/personas" | python -c "import sys,json;print([p['persona_id'] for p in json.load(sys.stdin)])"
+
+echo "== episode create =="
+EID=$(api -X POST "${B}/api/projects/${PID}/episodes" -d '{
+  "title":"Desire","goal":"Understand desire","target_duration_seconds":600,
+  "personas":[
+    {"persona_id":"modern_host","version":"v1.0","role":"host","speaker_label":"HOST"},
+    {"persona_id":"laozi","version":"v1.0","role":"guest","speaker_label":"LAOZI"},
+    {"persona_id":"buddha","version":"v1.0","role":"guest","speaker_label":"BUDDHA"}]}' \
+  | python -c "import sys,json;print(json.load(sys.stdin)['id'])")
+echo "episode: ${EID}"
+echo "list episodes:"; api "${B}/api/projects/${PID}/episodes" | python -c "import sys,json;print(len(json.load(sys.stdin)),'episode(s)')"
+PJID=$(api -X POST "${B}/api/episodes/${EID}/discussion-plan" | python -c "import sys,json;print(json.load(sys.stdin)['job_id'])")
+for _ in $(seq 1 120); do
+  PST=$(api "${B}/api/jobs/${PJID}" | python -c "import sys,json;print(json.load(sys.stdin)['status'])")
+  [ "${PST}" = "completed" ] || [ "${PST}" = "failed" ] && break; sleep 0.5
+done
+echo "plan job: ${PST}"
+echo "role context speakers:"; api "${B}/api/episodes/${EID}/role-context" | python -c "import sys,json;print([c['speaker_label'] for c in json.load(sys.stdin)['cards']])"
+echo "plan beats:"; api "${B}/api/episodes/${EID}/discussion-plan" | python -c "import sys,json;d=json.load(sys.stdin);print('v%d,'%d['version'], len(d['plan']['beats']),'beats')"
 echo "SMOKE_OK"

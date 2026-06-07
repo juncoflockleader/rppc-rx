@@ -13,6 +13,7 @@ import {
 } from "@/lib/api";
 import type { Project, Source, SourceSummary } from "@/lib/types";
 import { useJob } from "@/lib/useJob";
+import { EpisodesPanel } from "@/components/episodes-panel";
 import {
   Badge,
   Button,
@@ -54,6 +55,8 @@ export default function ProjectDetailPage() {
           <SourceCard key={s.id} projectId={id} source={s} onChange={() => sources.mutate()} />
         ))}
       </section>
+
+      <EpisodesPanel projectId={id} />
     </div>
   );
 }

@@ -18,9 +18,12 @@ export default function RootLayout({
             <Link href="/projects" className="font-semibold tracking-tight">
               Podcast&nbsp;Synthesis
             </Link>
-            <nav className="text-sm text-neutral-500">
+            <nav className="flex gap-4 text-sm text-neutral-500">
               <Link href="/projects" className="hover:text-neutral-900">
                 Projects
+              </Link>
+              <Link href="/personas" className="hover:text-neutral-900">
+                Personas
               </Link>
             </nav>
           </div>

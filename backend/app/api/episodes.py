@@ -62,6 +62,11 @@ def create_episode(body: CreateEpisodeRequest,
     return EpisodeOut.from_row(ep, parts)
 
 
+@router.get("/api/projects/{project_id}/episodes", response_model=list[EpisodeOut])
+def list_episodes(project: dict = Depends(require_project_owner)):
+    return [EpisodeOut.from_row(r) for r in ep_repo.list_for_project(str(project["id"]))]
+
+
 @router.get("/api/episodes/{episode_id}", response_model=EpisodeOut)
 def get_episode(episode_id: str, user: dict = Depends(get_current_user)):
     ep = _owned_episode(episode_id, user)

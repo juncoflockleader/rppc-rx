@@ -1,9 +1,15 @@
 // Typed client for the Podcast Synthesis backend. Sends the dev bearer token
 // and unwraps the backend's {error:{message}} envelope into thrown Errors.
 import type {
+  DiscussionPlan,
+  Episode,
+  EpisodeParticipant,
   Job,
   JobRef,
+  PersonaCard,
+  PersonaVersion,
   Project,
+  RoleContext,
   Source,
   SourceSummary,
 } from "./types";
@@ -85,6 +91,35 @@ export const processSource = (projectId: string, sourceId: string) =>
   });
 export const getSourceSummary = (sourceId: string) =>
   request<SourceSummary>(`/api/sources/${sourceId}/summary`);
+
+// --- Personas ---
+export const listPersonas = () => request<PersonaCard[]>("/api/personas");
+export const getPersonaVersion = (personaId: string, version: string) =>
+  request<PersonaVersion>(`/api/personas/${personaId}/versions/${version}`);
+
+// --- Episodes / planning ---
+export const listEpisodes = (projectId: string) =>
+  request<Episode[]>(`/api/projects/${projectId}/episodes`);
+export const getEpisode = (id: string) => request<Episode>(`/api/episodes/${id}`);
+export const createEpisode = (
+  projectId: string,
+  body: {
+    title?: string;
+    goal?: string;
+    target_duration_seconds?: number;
+    personas: EpisodeParticipant[];
+  }
+) =>
+  request<Episode>(`/api/projects/${projectId}/episodes`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+export const generatePlan = (episodeId: string) =>
+  request<JobRef>(`/api/episodes/${episodeId}/discussion-plan`, { method: "POST" });
+export const getPlan = (episodeId: string) =>
+  request<DiscussionPlan>(`/api/episodes/${episodeId}/discussion-plan`);
+export const getRoleContext = (episodeId: string) =>
+  request<RoleContext>(`/api/episodes/${episodeId}/role-context`);
 
 // --- Jobs ---
 export const getJob = (jobId: string) => request<Job>(`/api/jobs/${jobId}`);

@@ -47,6 +47,10 @@ def test_episode_create_and_plan(seeded_personas, client, auth):
     pid = _project_with_source(client, auth)
     eid = _create_episode(client, auth, pid)
 
+    # the episode shows up in the project's episode list
+    listed = client.get(f"/api/projects/{pid}/episodes", headers=auth).json()
+    assert any(e["id"] == eid for e in listed)
+
     # generate plan (background job)
     r = client.post(f"/api/episodes/{eid}/discussion-plan", headers=auth)
     assert r.status_code == 202

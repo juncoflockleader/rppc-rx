@@ -158,7 +158,11 @@ tests (58 unit + 30 integration) against a real pgvector Postgres in CI.
 - [x] Projects list + create (`/projects`)
 - [x] Project detail (`/projects/[id]`) — add text/upload source, process with live
       progress, view source summary (themes + key claims)
-- [ ] Persona picker, episode/outline, script editor (evidence/QA badges), audio player, export
+- [x] Personas library (`/personas`) — cards + expandable stance/forbidden-moves detail
+- [x] Episode creation (host + 1–2 guests, goal, length) from the project page
+- [x] Outline screen (`/episodes/[id]`) — generate/regenerate plan with live progress,
+      role-context cards, discussion-plan beats + takeaway
+- [ ] Script editor (evidence/QA badges), audio player, export
 
 Run it:
 
