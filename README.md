@@ -149,7 +149,27 @@ Per design §25 M8 (backend subset; onboarding/admin UI are frontend):
 claims → personas → episode → plan → script → QA → audio → export, verified by 88
 tests (58 unit + 30 integration) against a real pgvector Postgres in CI.
 
-The Next.js frontend (design §16) is the remaining track and has not been started.
+## Frontend (in progress) — vertical slice
+
+`frontend/` is a Next.js 16 (App Router) + TypeScript + Tailwind app. First slice:
+
+- [x] Typed API client (`src/lib/api.ts`) with the dev bearer token + error-envelope unwrap
+- [x] Job-polling hook (`useJob`) for live progress
+- [x] Projects list + create (`/projects`)
+- [x] Project detail (`/projects/[id]`) — add text/upload source, process with live
+      progress, view source summary (themes + key claims)
+- [ ] Persona picker, episode/outline, script editor (evidence/QA badges), audio player, export
+
+Run it:
+
+```bash
+cd frontend
+cp .env.example .env.local          # NEXT_PUBLIC_API_BASE + NEXT_PUBLIC_DEV_TOKEN
+npm install && npm run dev          # http://localhost:3000 (backend must be on :8000)
+```
+
+The client contract is smoke-tested against a live backend via
+`scripts/smoke_frontend_api.sh`. Remaining screens extend this slice incrementally.
 
 ## Quick start
 
