@@ -82,4 +82,30 @@ done
 echo "plan job: ${PST}"
 echo "role context speakers:"; api "${B}/api/episodes/${EID}/role-context" | python -c "import sys,json;print([c['speaker_label'] for c in json.load(sys.stdin)['cards']])"
 echo "plan beats:"; api "${B}/api/episodes/${EID}/discussion-plan" | python -c "import sys,json;d=json.load(sys.stdin);print('v%d,'%d['version'], len(d['plan']['beats']),'beats')"
+
+echo "== script generation =="
+SJID=$(api -X POST "${B}/api/episodes/${EID}/scripts" | python -c "import sys,json;print(json.load(sys.stdin)['job_id'])")
+for _ in $(seq 1 120); do
+  SST=$(api "${B}/api/jobs/${SJID}" | python -c "import sys,json;print(json.load(sys.stdin)['status'])")
+  [ "${SST}" = "completed" ] || [ "${SST}" = "failed" ] && break; sleep 0.5
+done
+echo "script job: ${SST}"
+SCRIPT=$(api "${B}/api/episodes/${EID}/scripts/latest")
+VID=$(echo "${SCRIPT}" | python -c "import sys,json;print(json.load(sys.stdin)['script_version_id'])")
+SEG0=$(echo "${SCRIPT}" | python -c "import sys,json;print(json.load(sys.stdin)['segments'][0]['id'])")
+echo "script:"; echo "${SCRIPT}" | python -c "import sys,json;d=json.load(sys.stdin);print(len(d['segments']),'segments, safety=',d['safety_status'])"
+
+echo "== edit + rewrite =="
+api -X PATCH "${B}/api/script-segments/${SEG0}" -d '{"text":"An edited opening line for the host."}' | python -c "import sys,json;print('edited ->',json.load(sys.stdin)['status'])"
+api -X POST "${B}/api/script-segments/${SEG0}/rewrite" -d '{"instruction":"make it warmer"}' | python -c "import sys,json;print('rewrite ->',json.load(sys.stdin)['text'][:40])"
+
+echo "== QA =="
+QJID=$(api -X POST "${B}/api/scripts/${VID}/qa" | python -c "import sys,json;print(json.load(sys.stdin)['job_id'])")
+for _ in $(seq 1 120); do
+  QST=$(api "${B}/api/jobs/${QJID}" | python -c "import sys,json;print(json.load(sys.stdin)['status'])")
+  [ "${QST}" = "completed" ] || [ "${QST}" = "failed" ] && break; sleep 0.5
+done
+echo "qa job: ${QST}"
+api "${B}/api/scripts/${VID}/qa" | python -c "import sys,json;d=json.load(sys.stdin);print('safety=',d['safety_status'],'| reports:',sorted(r['report_type'] for r in d['reports']))"
+echo "repair:"; api -X POST "${B}/api/scripts/${VID}/repair" | python -c "import sys,json;print(json.load(sys.stdin)['count'],'segment(s) repaired')"
 echo "SMOKE_OK"

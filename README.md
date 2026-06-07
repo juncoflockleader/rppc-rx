@@ -162,7 +162,10 @@ tests (58 unit + 30 integration) against a real pgvector Postgres in CI.
 - [x] Episode creation (host + 1–2 guests, goal, length) from the project page
 - [x] Outline screen (`/episodes/[id]`) — generate/regenerate plan with live progress,
       role-context cards, discussion-plan beats + takeaway
-- [ ] Script editor (evidence/QA badges), audio player, export
+- [x] Script editor (`/episodes/[id]/script`) — generate script, per-segment edit +
+      LLM rewrite, **evidence badges** + per-segment **QA warnings**, **QA panel**
+      (7 dimension scores + safety gate) and one-click **repair**
+- [ ] Audio player, export screen
 
 Run it:
 

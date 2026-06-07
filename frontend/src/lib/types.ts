@@ -121,3 +121,72 @@ export type RoleContext = {
   episode_id: string;
   cards: { speaker_label: string; version: number; card: RoleContextCard }[];
 };
+
+// --- Script + QA ---
+export type EvidenceType =
+  | "source_material"
+  | "persona_canon"
+  | "host_bridge"
+  | "creative_bridge"
+  | "unsupported_or_needs_review";
+
+export type Evidence = {
+  type: EvidenceType;
+  claim_id?: string | null;
+  concept?: string | null;
+  notes?: string | null;
+};
+
+export type ScriptSegment = {
+  id: string;
+  segment_index: number;
+  beat_id?: string | null;
+  speaker_label: string;
+  text: string;
+  estimated_seconds: number;
+  status: string;
+  evidence: Evidence[];
+};
+
+export type Script = {
+  episode_id: string;
+  script_version_id: string;
+  version: number;
+  status: string;
+  safety_status: string;
+  total_estimated_seconds?: number | null;
+  metadata?: { speaker_share?: Record<string, number>; segment_count?: number } | null;
+  segments: ScriptSegment[];
+};
+
+export type Severity = "low" | "medium" | "high";
+
+export type QaWarning = {
+  segment_id?: string | null;
+  segment_index?: number | null;
+  speaker_label?: string | null;
+  severity: Severity;
+  message: string;
+  suggested_action?: string;
+  suggested_rewrite?: string;
+};
+
+export type QaReport = {
+  report_type: string;
+  score: Record<string, unknown>;
+  warnings: QaWarning[];
+};
+
+export type QaPanel = {
+  script_version_id: string;
+  safety_status: string;
+  summary: Record<string, number | null>;
+  reports: QaReport[];
+};
+
+export type SegmentUpdate = {
+  id: string;
+  text: string;
+  estimated_seconds: number;
+  status: string;
+};

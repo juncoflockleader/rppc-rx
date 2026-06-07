@@ -76,6 +76,31 @@ export function ErrorNote({ message }: { message?: string | null }) {
   );
 }
 
+type Tone = "neutral" | "green" | "amber" | "red" | "blue";
+
+export function evidenceMeta(type: string): { label: string; tone: Tone } {
+  switch (type) {
+    case "source_material":
+      return { label: "Source", tone: "green" };
+    case "persona_canon":
+      return { label: "Canon", tone: "blue" };
+    case "host_bridge":
+      return { label: "Host bridge", tone: "neutral" };
+    case "creative_bridge":
+      return { label: "Creative", tone: "amber" };
+    case "unsupported_or_needs_review":
+      return { label: "Needs review", tone: "red" };
+    default:
+      return { label: type, tone: "neutral" };
+  }
+}
+
+export function severityTone(severity: string): Tone {
+  if (severity === "high") return "red";
+  if (severity === "medium") return "amber";
+  return "neutral";
+}
+
 export function statusTone(
   status: string
 ): "neutral" | "green" | "amber" | "red" | "blue" {

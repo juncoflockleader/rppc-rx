@@ -88,9 +88,16 @@ export default function EpisodePage() {
             ? `Discussion plan v${plan.version} ready — ${plan.plan.beats.length} beats.`
             : "Generate role context cards and a discussion plan from the source + personas."}
         </div>
-        <Button onClick={generate} disabled={running}>
-          {running ? "Planning…" : plan ? "Regenerate" : "Generate plan"}
-        </Button>
+        <div className="flex items-center gap-2">
+          {plan && (
+            <Link href={`/episodes/${id}/script`}>
+              <Button variant="secondary">Script &amp; QA →</Button>
+            </Link>
+          )}
+          <Button onClick={generate} disabled={running}>
+            {running ? "Planning…" : plan ? "Regenerate" : "Generate plan"}
+          </Button>
+        </div>
       </Card>
 
       {running && job && (

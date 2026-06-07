@@ -9,7 +9,10 @@ import type {
   PersonaCard,
   PersonaVersion,
   Project,
+  QaPanel,
   RoleContext,
+  Script,
+  SegmentUpdate,
   Source,
   SourceSummary,
 } from "./types";
@@ -120,6 +123,33 @@ export const getPlan = (episodeId: string) =>
   request<DiscussionPlan>(`/api/episodes/${episodeId}/discussion-plan`);
 export const getRoleContext = (episodeId: string) =>
   request<RoleContext>(`/api/episodes/${episodeId}/role-context`);
+
+// --- Script ---
+export const generateScript = (episodeId: string) =>
+  request<JobRef>(`/api/episodes/${episodeId}/scripts`, { method: "POST" });
+export const getLatestScript = (episodeId: string) =>
+  request<Script>(`/api/episodes/${episodeId}/scripts/latest`);
+export const updateSegment = (segmentId: string, text: string) =>
+  request<SegmentUpdate>(`/api/script-segments/${segmentId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ text }),
+  });
+export const rewriteSegment = (segmentId: string, instruction: string) =>
+  request<SegmentUpdate>(`/api/script-segments/${segmentId}/rewrite`, {
+    method: "POST",
+    body: JSON.stringify({ instruction }),
+  });
+
+// --- QA ---
+export const runQA = (versionId: string) =>
+  request<JobRef>(`/api/scripts/${versionId}/qa`, { method: "POST" });
+export const getQA = (versionId: string) =>
+  request<QaPanel>(`/api/scripts/${versionId}/qa`);
+export const repairScript = (versionId: string) =>
+  request<{ repaired_segment_ids: string[]; count: number; note: string }>(
+    `/api/scripts/${versionId}/repair`,
+    { method: "POST" }
+  );
 
 // --- Jobs ---
 export const getJob = (jobId: string) => request<Job>(`/api/jobs/${jobId}`);
